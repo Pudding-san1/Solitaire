@@ -105,18 +105,27 @@ class Jeu:
 
     def piocher(self):
         if self.pioche.est_vide():
-            self.rempiler_pioche()
+            self.renfiler_pioche()
         for _ in range(3):
             if self.pioche.est_vide():
                 break
             carte = self.pioche.defiler()
             self.pioche_cartes_sorties.empiler(carte)
 
-    def rempiler_pioche(self):
-        pass
+    def renfiler_pioche(self):
+        if self.pioche_cartes_sorties.est_vide():
+            return
+        else:
+            pile_intermediaire = Pile()
+            for _ in range(self.pioche_cartes_sorties.taille()):
+                carte = self.pioche_cartes_sorties.depiler()
+                pile_intermediaire.empiler(carte)
+            for _ in range(pile_intermediaire.taille()):
+                carte = pile_intermediaire.depiler()
+                self.pioche.enfiler(carte)
 
 # vérifier fonctionnement de la pioche
 jeu = Jeu([3, 1, 5, 8, 9, 14, 23, 12])
-print(jeu.pioche.tete())
-jeu.piocher()
-print(jeu.pioche_cartes_sorties.p)
+for i in range(5):
+    jeu.piocher()
+    print(jeu.pioche_cartes_sorties.p)
