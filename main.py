@@ -24,8 +24,11 @@ class Pile:
         return len(self.p)
     
 class File:
-    def __init__(self):
-        self.f = self.creer_file_vide()
+    def __init__(self, file = None):
+        if file != None:
+            self.f = file
+        else:
+            self.f = self.creer_file_vide()
     
     def creer_file_vide(self):
         return []
@@ -40,7 +43,7 @@ class File:
         self.f.append(elem)
     
     def defiler(self):
-        self.f.pop(0)
+        return self.f.pop(0)
         
     def tete(self):
         return self.f[0]
@@ -66,9 +69,8 @@ class PileInfos:
         self.pile = pile
 
 class Jeu:
-    def __init__(self):
-
-        self.pioche = File()
+    def __init__(self, pioche = None):
+        self.pioche = File(pioche)
         self.pioche_cartes_sorties = Pile()
         self.carte_cliquee = None # carte qui a été cliquée par le joueur, None si pas de carte cliquée ou déplacement terminé
         self.pile_deplacement = None # Pile temporaire pour stocker les cartes déplacées, None si pas de déplacement en cours
@@ -102,7 +104,19 @@ class Jeu:
         pass
 
     def piocher(self):
-        pass
+        if self.pioche.est_vide():
+            self.rempiler_pioche()
+        for _ in range(3):
+            if self.pioche.est_vide():
+                break
+            carte = self.pioche.defiler()
+            self.pioche_cartes_sorties.empiler(carte)
 
     def rempiler_pioche(self):
         pass
+
+# vérifier fonctionnement de la pioche
+jeu = Jeu([3, 1, 5, 8, 9, 14, 23, 12])
+print(jeu.pioche.tete())
+jeu.piocher()
+print(jeu.pioche_cartes_sorties.p)
