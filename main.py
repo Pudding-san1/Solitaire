@@ -1,3 +1,12 @@
+import tkinter as tk
+from tkinter import PhotoImage
+
+fenetre = tk.Tk()
+fenetre.geometry("1000x600")
+fenetre.resizable(False, False)
+fenetre.configure(bg = "bisque3")
+fenetre.title("Solitaire")
+
 class Pile:
     def __init__(self):
         self.p = self.creer_pile_vide()
@@ -58,6 +67,13 @@ class Carte:
         self.visible = visible # True si la carte est face visible, False si la carte est face cachée
         self.pile = pile # Pile à laquelle la carte appartient
 
+    def afficher_carte(self, x, y):
+        global fenetre
+        carte_file = "cartes/"+self.valeur+"_"+self.couleur+".gif"
+        self.img = PhotoImage(file=carte_file)
+        label = tk.Label(fenetre, image = self.img, borderwidth=0)
+        label.place(x=x, y=y)
+
 class PileInfos:
     """ Permet de stocker des informations sur une Pile de cartes : 
     - le numéro de la Pile si c'est une Pile du plateau de jeu, None sinon
@@ -89,7 +105,12 @@ class Jeu:
         self.pile_couleur_pique = PileInfos(None, 'pique', Pile())
     
     def initialiser_jeu(self):
-        pass
+        # création des cartes
+        self.cartes = []
+        for couleur in ['coeur', 'carreau', 'trefle', 'pique']:
+            for valeur in ['as', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'valet', 'dame', 'roi']:
+                carte = Carte(couleur, valeur, False, None)
+                self.cartes.append(carte)
 
     def changer_carte_de_pile(self):
         pass
@@ -125,7 +146,14 @@ class Jeu:
                 self.pioche.enfiler(carte)
 
 # vérifier fonctionnement de la pioche
-jeu = Jeu([3, 1, 5, 8, 9, 14, 23, 12])
+"""jeu = Jeu([3, 1, 5, 8, 9, 14, 23, 12])
 for i in range(5):
     jeu.piocher()
-    print(jeu.pioche_cartes_sorties.p)
+    print(jeu.pioche_cartes_sorties.p)"""
+
+# vérifier fonctionnement de l'affichage d'une carte
+"""jeu = Jeu()
+jeu.initialiser_jeu()
+jeu.cartes[0].afficher_carte(100, 100)"""
+
+fenetre.mainloop()
