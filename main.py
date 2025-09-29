@@ -1,11 +1,13 @@
 import tkinter as tk
 from tkinter import PhotoImage
+from PIL import Image, ImageTk
 
 fenetre = tk.Tk()
 fenetre.geometry("1000x600")
 fenetre.resizable(False, False)
 fenetre.configure(bg = "bisque3")
 fenetre.title("Solitaire")
+fenetre.attributes('-topmost', 1)
 
 class Pile:
     def __init__(self):
@@ -66,13 +68,25 @@ class Carte:
         self.valeur = valeur
         self.visible = visible # True si la carte est face visible, False si la carte est face cachée
         self.pile = pile # Pile à laquelle la carte appartient
+        self.label = tk.Label(fenetre, borderwidth=0)
+        #self.afficher_image(100, 100)
 
-    def afficher_carte(self, x, y):
-        global fenetre
-        carte_file = "cartes/"+self.valeur+"_"+self.couleur+".gif"
-        self.img = PhotoImage(file=carte_file)
-        label = tk.Label(fenetre, image = self.img, borderwidth=0)
-        label.place(x=x, y=y)
+    def placer_carte(self, x=None, y=None):
+        """ Change la position de la carte sur la fenêtre """
+        if x == None:
+            self.label.place_configure(y=y)
+        elif y == None:
+            self.label.place_configure(x=x)
+        else:
+            self.label.place(x=x, y=y)
+
+    def afficher_image(self, x, y):
+        if self.visible == False:
+            self.img = PhotoImage(file="cartes/face_cachee.png")
+        else:
+            self.img = PhotoImage(file="cartes/"+self.valeur+"_"+self.couleur+".gif")
+        self.label.configure(image=self.img)
+        self.placer_carte(x, y)
 
 class PileInfos:
     """ Permet de stocker des informations sur une Pile de cartes : 
@@ -152,8 +166,13 @@ for i in range(5):
     print(jeu.pioche_cartes_sorties.p)"""
 
 # vérifier fonctionnement de l'affichage d'une carte
-"""jeu = Jeu()
+jeu = Jeu()
 jeu.initialiser_jeu()
-jeu.cartes[0].afficher_carte(100, 100)"""
+jeu.cartes[0].visible = False
+jeu.cartes[0].afficher_image(100, 100)
+jeu.cartes[1].visible = False
+jeu.cartes[1].afficher_image(100, 140)
+jeu.cartes[2].visible = True
+jeu.cartes[2].afficher_image(100, 180)
 
 fenetre.mainloop()
