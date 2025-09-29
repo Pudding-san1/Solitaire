@@ -165,14 +165,14 @@ for i in range(5):
     jeu.piocher()
     print(jeu.pioche_cartes_sorties.p)"""
 
-# vérifier fonctionnement de l'affichage d'une carte
-jeu = Jeu()
+# vérifier fonctionnement de l'affichage des cartes
+"""jeu = Jeu()
 jeu.initialiser_jeu()
 jeu.cartes[0].visible = False
 jeu.cartes[0].afficher_image(100, 100)
 jeu.cartes[1].visible = False
 jeu.cartes[1].afficher_image(100, 140)
 jeu.cartes[2].visible = True
-jeu.cartes[2].afficher_image(100, 180)
+jeu.cartes[2].afficher_image(100, 180)"""
 
 fenetre.mainloop()
