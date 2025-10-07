@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import PhotoImage
-from PIL import Image, ImageTk
 
 fenetre = tk.Tk()
 fenetre.geometry("1000x600")
@@ -64,22 +63,27 @@ class File:
         return len(self.f)
 
 class Carte:
-    def __init__(self, couleur:str, valeur:int, visible: bool, pile: Pile) -> None:
+    def __init__(self, couleur:str, valeur:int, visible: bool, pile: Pile, x:int = None, y:int = None) -> None:
         self.couleur: str = couleur
         self.valeur: int = valeur
         self.visible: bool = visible # True si la carte est face visible, False si la carte est face cachée
         self.pile: Pile = pile # Pile à laquelle la carte appartient
         self.label = tk.Label(fenetre, borderwidth=0)
-        #self.afficher_image(100, 100)
+        self.x = x
+        self.y = y
 
     def placer_carte(self, x: int = None, y: int = None) -> None:
         """ Change la position de la carte sur la fenêtre """
         if x == None:
             self.label.place_configure(y=y)
+            self.y = y
         elif y == None:
             self.label.place_configure(x=x)
+            self.x = x
         else:
             self.label.place(x=x, y=y)
+            self.x = x
+            self.y = y
 
     def afficher_image(self, x: int, y: int) -> None:
         if self.visible == False:
@@ -94,10 +98,11 @@ class PileInfos:
     - le numéro de la Pile si c'est une Pile du plateau de jeu, None sinon
     - la couleur si c'est une Pile de fondation, None sinon
     """
-    def __init__(self, numero: int, couleur:str, pile: Pile):
+    def __init__(self, numero: int, couleur:str, pile: Pile, x: int) -> None:
         self.numero: int = numero 
         self.couleur: str = couleur 
         self.pile: Pile = pile
+        self.x = x
 
 class Jeu:
     def __init__(self, pioche: list = None):
@@ -106,18 +111,19 @@ class Jeu:
         self.carte_cliquee = None # carte qui a été cliquée par le joueur, None si pas de carte cliquée ou déplacement terminé
         self.pile_deplacement = None # Pile temporaire pour stocker les cartes déplacées, None si pas de déplacement en cours
         # création des 7 piles de jeu (qui sont sur le plateau de jeu)
-        self.pile_jeu1 = PileInfos(1, None, Pile())
-        self.pile_jeu2 = PileInfos(2, None, Pile())
-        self.pile_jeu3 = PileInfos(3, None, Pile())
-        self.pile_jeu4 = PileInfos(4, None, Pile())
-        self.pile_jeu5 = PileInfos(5, None, Pile())
-        self.pile_jeu6 = PileInfos(6, None, Pile())
-        self.pile_jeu7 = PileInfos(7, None, Pile())
+        self.pile_jeu1 = PileInfos(1, None, Pile(), 10)
+        self.pile_jeu2 = PileInfos(2, None, Pile(), 150)
+        self.pile_jeu3 = PileInfos(3, None, Pile(), 290)
+        self.pile_jeu4 = PileInfos(4, None, Pile(), 430)
+        self.pile_jeu5 = PileInfos(5, None, Pile(), 570)
+        self.pile_jeu6 = PileInfos(6, None, Pile(), 710)
+        self.pile_jeu7 = PileInfos(7, None, Pile(), 850)
+        self.liste_pile = [self.pile_jeu1, self.pile_jeu2, self.pile_jeu3, self.pile_jeu4, self.pile_jeu5, self.pile_jeu6, self.pile_jeu7]
         # création des 4 piles de fondation
-        self.pile_couleur_coeur: PileInfos = PileInfos(None, 'coeur', Pile())
+        """self.pile_couleur_coeur: PileInfos = PileInfos(None, 'coeur', Pile())
         self.pile_couleur_carreau: PileInfos = PileInfos(None, 'carreau', Pile())
         self.pile_couleur_trefle: PileInfos = PileInfos(None, 'trefle', Pile())
-        self.pile_couleur_pique: PileInfos = PileInfos(None, 'pique', Pile())
+        self.pile_couleur_pique: PileInfos = PileInfos(None, 'pique', Pile())"""
     
     def initialiser_jeu(self) -> None:
         # création des cartes
@@ -129,6 +135,40 @@ class Jeu:
 
     def changer_carte_de_pile(self):
         pass
+
+    def determiner_carte_cliquee(self, event):
+        x = event.x_root - fenetre.winfo_rootx()
+        y = event.y_root - fenetre.winfo_rooty()
+        coordonnees = (x, y)
+        carte_cliquee = None
+        for pile in self.liste_pile:
+            if pile.pile.est_vide():
+                continue
+            sommet = pile.pile.sommet()
+            label = sommet.label
+            x0 = label.winfo_x()
+            x1 = x0 + label.winfo_width()
+            if x0 < coordonnees[0] < x1:
+                pile_cliquee = pile
+                break
+
+        pile_intermediaire = Pile()
+        for _ in range(pile_cliquee.pile.taille()):
+            carte = pile_cliquee.pile.sommet()
+            label = carte.label
+            y0 = label.winfo_y()
+            y1 = y0 + label.winfo_height()
+            if y0 < coordonnees[1] < y1 and carte.visible:
+                carte_cliquee = carte
+                break
+            else:
+                pile_intermediaire.empiler(pile_cliquee.pile.depiler())
+
+        for _ in range(pile_intermediaire.taille()):
+            pile_cliquee.pile.empiler(pile_intermediaire.depiler())
+
+        self.carte_cliquee = carte_cliquee
+        return carte_cliquee
 
     def verifier_validite_deplacement(self):
         pass
@@ -167,13 +207,20 @@ for i in range(5):
     print(jeu.pioche_cartes_sorties.p)"""
 
 # vérifier fonctionnement de l'affichage des cartes
-"""jeu = Jeu()
+jeu = Jeu()
 jeu.initialiser_jeu()
 jeu.cartes[0].visible = False
 jeu.cartes[0].afficher_image(100, 100)
 jeu.cartes[1].visible = False
 jeu.cartes[1].afficher_image(100, 140)
 jeu.cartes[2].visible = True
-jeu.cartes[2].afficher_image(100, 180)"""
+jeu.cartes[2].afficher_image(100, 180)
+jeu.pile_jeu1.pile.empiler(jeu.cartes[0])
+jeu.pile_jeu1.pile.empiler(jeu.cartes[1])
+jeu.pile_jeu1.pile.empiler(jeu.cartes[2])
 
+def carte(event):
+    print("Carte cliquée :", event.x, event.y)
+
+fenetre.bind("<Button-1>", lambda event: jeu.determiner_carte_cliquee(event))
 fenetre.mainloop()

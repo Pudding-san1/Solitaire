@@ -1,16 +1,15 @@
 import tkinter as tk
-from tkinter import PhotoImage
 
-# Create the main window
-parent = tk.Tk()
-parent.title("Image in Tkinter")
+class Jeu:
+    def __init__(self):
+        pass
 
-# Load the image 
-image = PhotoImage(file="cartes/9_carreau.gif")
+    def carte_cliquee(self, event):
+        print("Carte cliquée :", event.x, event.y)
 
-# Create a label to display the image
-image_label = tk.Label(parent, image=image)
-image_label.pack()
+fenetre = tk.Tk()
+jeu = Jeu()
 
-# Start the Tkinter event loop
-parent.mainloop()
+fenetre.bind("<Button-1>", lambda event: jeu.carte_cliquee(event))
+
+fenetre.mainloop()
