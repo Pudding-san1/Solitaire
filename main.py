@@ -74,7 +74,9 @@ class Carte:
 
     def placer_carte(self, x: int = None, y: int = None) -> None:
         """ Change la position de la carte sur la fenêtre """
-        if x == None:
+        if x == None and y == None:
+            return
+        elif x == None:
             self.label.place_configure(y=y)
             self.y = y
         elif y == None:
@@ -85,11 +87,13 @@ class Carte:
             self.x = x
             self.y = y
 
-    def afficher_image(self, x: int, y: int) -> None:
-        if self.visible == False:
+    def changer_visibilite_image(self, x: int = None, y: int = None) -> None:
+        if self.visible == True:
             self.img = PhotoImage(file="cartes/face_cachee.png")
+            self.visible = False
         else:
             self.img = PhotoImage(file="cartes/"+self.valeur+"_"+self.couleur+".gif")
+            self.visible = True
         self.label.configure(image=self.img)
         self.placer_carte(x, y)
 
@@ -129,7 +133,7 @@ class Jeu:
         # création des cartes
         self.cartes = []
         for couleur in ['coeur', 'carreau', 'trefle', 'pique']:
-            for valeur in ['as', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'valet', 'dame', 'roi']:
+            for valeur in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']:
                 carte = Carte(couleur, valeur, False, None)
                 self.cartes.append(carte)
 
@@ -140,6 +144,7 @@ class Jeu:
         x = event.x_root - fenetre.winfo_rootx()
         y = event.y_root - fenetre.winfo_rooty()
         coordonnees = (x, y)
+        pile_cliquee = None
         carte_cliquee = None
         for pile in self.liste_pile:
             if pile.pile.est_vide():
@@ -149,25 +154,36 @@ class Jeu:
             x0 = label.winfo_x()
             x1 = x0 + label.winfo_width()
             if x0 < coordonnees[0] < x1:
-                pile_cliquee = pile
+                pile_cliquee = pile.pile
                 break
 
+        if pile_cliquee == None:
+            pile_cliquee = self.pioche_cartes_sorties # si ce n'est aucune des piles de jeu, c'est forcément une carte de celles sorties de la pioche
+
         pile_intermediaire = Pile()
-        for _ in range(pile_cliquee.pile.taille()):
-            carte = pile_cliquee.pile.sommet()
+        for _ in range(pile_cliquee.taille()):
+            carte = pile_cliquee.sommet()
             label = carte.label
-            y0 = label.winfo_y()
-            y1 = y0 + label.winfo_height()
-            if y0 < coordonnees[1] < y1 and carte.visible:
+            if pile_cliquee != self.pioche_cartes_sorties:
+                coor0 = label.winfo_y()
+                coor1 = coor0 + label.winfo_height()
+                coor_clic = coordonnees[1]
+            else:
+                coor0 = label.winfo_x()
+                coor1 = coor0 + label.winfo_height()
+                coor_clic = coordonnees[0]
+            if coor0 < coor_clic < coor1 and carte.visible:
                 carte_cliquee = carte
                 break
             else:
-                pile_intermediaire.empiler(pile_cliquee.pile.depiler())
+                pile_intermediaire.empiler(pile_cliquee.depiler())
 
         for _ in range(pile_intermediaire.taille()):
-            pile_cliquee.pile.empiler(pile_intermediaire.depiler())
+            pile_cliquee.empiler(pile_intermediaire.depiler())
 
         self.carte_cliquee = carte_cliquee
+        if carte_cliquee != None:
+            print("Carte cliquée :", carte_cliquee.couleur, carte_cliquee.valeur)
         return carte_cliquee
 
     def verifier_validite_deplacement(self):
@@ -182,11 +198,14 @@ class Jeu:
     def piocher(self) -> None:
         if self.pioche.est_vide():
             self.renfiler_pioche()
+        x = 10
         for _ in range(3):
             if self.pioche.est_vide():
                 break
             carte = self.pioche.defiler()
             self.pioche_cartes_sorties.empiler(carte)
+            carte.changer_visibilite_image(x, 10)
+            x += 40
 
     def renfiler_pioche(self) -> None:
         if self.pioche_cartes_sorties.est_vide():
@@ -209,18 +228,14 @@ for i in range(5):
 # vérifier fonctionnement de l'affichage des cartes
 jeu = Jeu()
 jeu.initialiser_jeu()
-jeu.cartes[0].visible = False
-jeu.cartes[0].afficher_image(100, 100)
-jeu.cartes[1].visible = False
-jeu.cartes[1].afficher_image(100, 140)
-jeu.cartes[2].visible = True
-jeu.cartes[2].afficher_image(100, 180)
+"""jeu.cartes[0].changer_visibilite_image(100, 100)
+jeu.cartes[1].changer_visibilite_image(100, 140)
+jeu.cartes[2].changer_visibilite_image(100, 180)
 jeu.pile_jeu1.pile.empiler(jeu.cartes[0])
 jeu.pile_jeu1.pile.empiler(jeu.cartes[1])
-jeu.pile_jeu1.pile.empiler(jeu.cartes[2])
-
-def carte(event):
-    print("Carte cliquée :", event.x, event.y)
+jeu.pile_jeu1.pile.empiler(jeu.cartes[2])"""
+jeu.pioche.f = [jeu.cartes[i] for i in range(3, 10)]
+jeu.piocher()
 
 fenetre.bind("<Button-1>", lambda event: jeu.determiner_carte_cliquee(event))
 fenetre.mainloop()
