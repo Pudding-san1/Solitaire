@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import PhotoImage
+import random
 
 fenetre = tk.Tk()
 fenetre.geometry("1000x600")
@@ -72,6 +73,9 @@ class Carte:
         self.x = x
         self.y = y
 
+    def donner_couleur_et_valeur(self) -> tuple:
+        return (self.couleur, self.valeur)
+    
     def placer_carte(self, x: int = None, y: int = None) -> None:
         """ Change la position de la carte sur la fenêtre """
         if x == None and y == None:
@@ -110,32 +114,45 @@ class PileInfos:
 
 class Jeu:
     def __init__(self, pioche: list = None):
+
+        self.cartes: list = [] # liste de toutes les cartes du jeu
         self.pioche: File = File(pioche)
         self.pioche_cartes_sorties: Pile = Pile()
         self.carte_cliquee = None # carte qui a été cliquée par le joueur, None si pas de carte cliquée ou déplacement terminé
         self.pile_deplacement = None # Pile temporaire pour stocker les cartes déplacées, None si pas de déplacement en cours
-        # création des 7 piles de jeu (qui sont sur le plateau de jeu)
-        self.pile_jeu1 = PileInfos(1, None, Pile(), 10)
-        self.pile_jeu2 = PileInfos(2, None, Pile(), 150)
-        self.pile_jeu3 = PileInfos(3, None, Pile(), 290)
-        self.pile_jeu4 = PileInfos(4, None, Pile(), 430)
-        self.pile_jeu5 = PileInfos(5, None, Pile(), 570)
-        self.pile_jeu6 = PileInfos(6, None, Pile(), 710)
-        self.pile_jeu7 = PileInfos(7, None, Pile(), 850)
-        self.liste_pile = [self.pile_jeu1, self.pile_jeu2, self.pile_jeu3, self.pile_jeu4, self.pile_jeu5, self.pile_jeu6, self.pile_jeu7]
-        # création des 4 piles de fondation
-        """self.pile_couleur_coeur: PileInfos = PileInfos(None, 'coeur', Pile())
-        self.pile_couleur_carreau: PileInfos = PileInfos(None, 'carreau', Pile())
-        self.pile_couleur_trefle: PileInfos = PileInfos(None, 'trefle', Pile())
-        self.pile_couleur_pique: PileInfos = PileInfos(None, 'pique', Pile())"""
-    
+
+        self.pile_jeu1: PileInfos = PileInfos(1, None, Pile(), 10)
+        self.pile_jeu2: PileInfos = PileInfos(2, None, Pile(), 150)
+        self.pile_jeu3: PileInfos = PileInfos(3, None, Pile(), 290)
+        self.pile_jeu4: PileInfos = PileInfos(4, None, Pile(), 430)
+        self.pile_jeu5: PileInfos = PileInfos(5, None, Pile(), 570)
+        self.pile_jeu6: PileInfos = PileInfos(6, None, Pile(), 710)
+        self.pile_jeu7: PileInfos = PileInfos(7, None, Pile(), 850)
+        self.liste_pile: list [PileInfos] = [self.pile_jeu1, self.pile_jeu2, self.pile_jeu3, self.pile_jeu4, self.pile_jeu5, self.pile_jeu6, self.pile_jeu7]
+
+        self.pile_couleur_coeur: PileInfos = PileInfos(None, 'coeur', Pile(), 600)
+        self.pile_couleur_carreau: PileInfos = PileInfos(None, 'carreau', Pile(), 750)
+        self.pile_couleur_trefle: PileInfos = PileInfos(None, 'trefle', Pile(), 900)
+        self.pile_couleur_pique: PileInfos = PileInfos(None, 'pique', Pile(), 1050)
+
     def initialiser_jeu(self) -> None:
         # création des cartes
-        self.cartes = []
-        for couleur in ['coeur', 'carreau', 'trefle', 'pique']:
-            for valeur in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']:
-                carte = Carte(couleur, valeur, False, None)
-                self.cartes.append(carte)
+        self.cartes = [Carte(couleur, valeur, False, None) for couleur in ['coeur', 'carreau', 'trefle', 'pique'] for valeur in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']]
+
+    def distribuer_cartes(self):
+        random.shuffle(self.cartes)
+
+        for i in range(7): # pour chaque pile de jeu
+            for j in range(i, 7): 
+    
+                carte = self.cartes.pop(0) # premiere carte de la liste                
+                carte.pile = self.liste_pile[j].pile 
+                self.liste_pile[j].pile.empiler(carte)
+
+                if j == i: # si c'est la dernière carte de la pile, elle est face visible
+                    carte.visible = True
+
+        self.pioche = File(self.cartes) # le reste des cartes constitue la pioche
 
     def changer_carte_de_pile(self):
         pass
@@ -219,6 +236,10 @@ class Jeu:
                 carte = pile_intermediaire.depiler()
                 self.pioche.enfiler(carte)
 
+    def bouger_carte(self):
+
+        pass
+            
 # vérifier fonctionnement de la pioche
 """jeu = Jeu([3, 1, 5, 8, 9, 14, 23, 12])
 for i in range(5):
@@ -227,15 +248,22 @@ for i in range(5):
 
 # vérifier fonctionnement de l'affichage des cartes
 jeu = Jeu()
+
+if __name__ == "__main__":
+    jeu.initialiser_jeu()
+    jeu.distribuer_cartes()
+    print (len(jeu.pioche.f))   
+
+"""
 jeu.initialiser_jeu()
-"""jeu.cartes[0].changer_visibilite_image(100, 100)
+jeu.cartes[0].changer_visibilite_image(100, 100)
 jeu.cartes[1].changer_visibilite_image(100, 140)
 jeu.cartes[2].changer_visibilite_image(100, 180)
 jeu.pile_jeu1.pile.empiler(jeu.cartes[0])
 jeu.pile_jeu1.pile.empiler(jeu.cartes[1])
-jeu.pile_jeu1.pile.empiler(jeu.cartes[2])"""
+jeu.pile_jeu1.pile.empiler(jeu.cartes[2])
 jeu.pioche.f = [jeu.cartes[i] for i in range(3, 10)]
 jeu.piocher()
-
 fenetre.bind("<Button-1>", lambda event: jeu.determiner_carte_cliquee(event))
 fenetre.mainloop()
+"""
