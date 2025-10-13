@@ -258,8 +258,33 @@ class Jeu:
                 self.pioche.enfiler(carte)
 
     def bouger_carte(self):
+     
+        if self.carte_cliquee is None:
+            return  # aucune carte à déplacer
 
-        pass
+        # On parcourt toutes les piles de jeu pour trouver une pile valide
+        for pile_cible in self.liste_pile + [
+            self.pile_couleur_coeur,
+            self.pile_couleur_carreau,
+            self.pile_couleur_trefle,
+            self.pile_couleur_pique
+        ]:
+            if pile_cible == self.carte_cliquee.pile:
+                continue  #peut pas déplacer vers la même pile
+            if self.verifier_validite_deplacement(self.carte_cliquee, pile_cible):
+                pile_source = self.carte_cliquee.pile
+                carte_a_deplacer = pile_source.depiler()
+                carte_a_deplacer.pile = pile_cible
+                nouvelle_y = 200 + 35 * pile_cible.taille() if pile_cible.numero else 10
+                carte_a_deplacer.deplacer_carte(x=pile_cible.x, y=nouvelle_y)
+                pile_cible.empiler(carte_a_deplacer)
+
+                if not pile_source.est_vide():
+                    pile_source.sommet().changer_visibilite_image()
+
+                print(f"La carte {carte_a_deplacer.valeur} de {carte_a_deplacer.couleur} déplacée vers la pile {pile_cible.numero if pile_cible.numero else pile_cible.couleur}")
+                self.carte_cliquee = None
+                break  # une seule carte déplacée à la fois
             
 # vérifier fonctionnement de la pioche
 """jeu = Jeu([3, 1, 5, 8, 9, 14, 23, 12])
