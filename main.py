@@ -174,8 +174,21 @@ class Jeu:
 
         self.pioche = File(self.cartes) # le reste des cartes constitue la pioche
 
-    def changer_carte_de_pile(self):
-        pass
+    def changer_carte_de_pile(self, pile_source: PileInfos, pile_cible: PileInfos) -> None:
+
+        if pile_source.est_vide():
+            print("la pile est vide.")
+            return
+        carte = pile_source.depiler() 
+        carte.pile = pile_cible#Met à jour la pile de base
+        nouvelle_y = 200 + 35 * pile_cible.taille() #Calcule de la nouvelle position graphique de la carte
+        carte.deplacer_carte(x=pile_cible.x, y=nouvelle_y)
+        pile_cible.empiler(carte)#Empile la carte dans pile cible
+    
+        if not pile_source.est_vide():#Si la pile source n’est pas vide, dévoiler sa nouvelle carte du dessus
+            pile_source.sommet().changer_visibilite_image()
+        print(f" La carte {carte.valeur} de {carte.couleur} déplacée de la pile {pile_source.numero} vers la pile {pile_cible.numero}.")
+
 
     def determiner_carte_cliquee(self, event):
         x = event.x_root - fenetre.winfo_rootx()
@@ -223,14 +236,72 @@ class Jeu:
             print("Carte cliquée :", carte_cliquee.couleur, carte_cliquee.valeur)
         return carte_cliquee
 
-    def verifier_validite_deplacement(self):
-        pass
+    def verifier_validite_deplacement(self, carte_source: Carte, pile_cible: PileInfos) -> bool:
+        if pile_cible.est_vide():
+            if pile_cible.numero != None:
+                if carte_source.valeur == '13':  # Roi
+                    return True
+                else:
+                    return False
+            # si pile de fondation (cœur, carreau, trèfle, pique)
+            else:
+                if carte_source.valeur == '1' and carte_source.couleur == pile_cible.couleur:  # As
+                    return True
+                else:
+                    return False
 
-    def verifier_victoire(self):
-        pass
+        carte_cible = pile_cible.sommet()
+        val_source = int(carte_source.valeur)
+        val_cible = int(carte_cible.valeur)
+
+        if pile_cible.couleur != None:
+            # Même couleur et valeur +1
+            if carte_source.couleur == carte_cible.couleur and val_source == val_cible + 1:
+                return True
+            else:
+                return False
+        else:
+            # Couleurs différentes (rouge/noir)
+            couleurs_rouges = ['coeur', 'carreau']
+            source_rouge = carte_source.couleur in couleurs_rouges
+            cible_rouge = carte_cible.couleur in couleurs_rouges
+
+            if source_rouge != cible_rouge and val_source == val_cible - 1:
+                return True
+            else:
+                return False
+
+    def verifier_victoire(self) -> bool:
+
+        # On rassemble les piles de fondation dans une liste
+        piles_fondation = [
+            self.pile_couleur_coeur,
+            self.pile_couleur_carreau,
+            self.pile_couleur_trefle,
+            self.pile_couleur_pique
+        ]
+        victoire = True
+        for pile in piles_fondation:
+            if pile.taille() != 13:  
+                victoire = False
+                break  # victoire impossible
+
+            if victoire:
+                print(" YOU WINNER ")
+            return True
+        else:
+            # Partie pas encore gagnée
+            return False
+
 
     def devoiler_carte_dessus(self):
-        pass
+
+        for pile in self.liste_pile:
+            if not pile.est_vide():         
+                carte_sommet = pile.sommet()  
+                if not carte_sommet.visible:  
+                    carte_sommet.changer_visibilite_image() 
+
 
     def piocher(self) -> None:
         if self.pioche.est_vide():
