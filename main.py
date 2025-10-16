@@ -1,4 +1,4 @@
-import tkinter as tk
+import tkinter as tk #coudcou
 from tkinter import PhotoImage
 import random
 
